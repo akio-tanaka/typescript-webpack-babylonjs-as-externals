@@ -1,4 +1,4 @@
-# typescript-webpack-babylonjs-as-externals
+# typescript-webpack-babylonjs-boilerplate
 
 This is a demo project to unbundle babylon.js with typescript and webpack.
 
