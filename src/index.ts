@@ -16,9 +16,9 @@ export function testLodash(): void {
 
 
 export function testBabylon(): void {
-    var canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
-    // Load the 3D engine
-    var engine = new BABYLON.Engine(canvas, true, {
+    // setup 3D Viewer
+    const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
+    const engine = new BABYLON.Engine(canvas, true, {
       preserveDrawingBuffer: true,
       stencil: true,
     });
@@ -31,9 +31,7 @@ export function testBabylon(): void {
         2,
         BABYLON.Vector3.Zero(),
         scene);
-
     camera.attachControl(canvas);
-
     const light = new BABYLON.HemisphericLight(
         "light",
         new BABYLON.Vector3(0, 1, 0),
