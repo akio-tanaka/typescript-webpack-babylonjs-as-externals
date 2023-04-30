@@ -7,9 +7,7 @@
     <script id="viewer" defer src="js/viewer.js"></script>
     <script>
       window.onload = (event) => {
-        console.log("page is fully loaded");
-        viewer.testLodash();
-        viewer.testBabylon();
+        viewer.create("renderCanvas", "assets/boombox.glb");
       };
     </script>
     <style type="text/css">

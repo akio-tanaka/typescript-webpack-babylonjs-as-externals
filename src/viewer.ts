@@ -1,82 +1,84 @@
 import * as BABYLON from "@babylonjs/core";
 import * as GUI from "@babylonjs/gui";
-import _ from "lodash";
+import { Background, BackgroundType } from "./background";
+import { ViewerSettings, defaultViewerSettings } from "./viewer-settings";
 
-export function testLodash(): void {
-  const strs = ["test", "desu", "test-data", "desu"];
-  const result = _.filter(strs, (val) => val == "test");
-  console.log(result);
+function createEngine(canvasId: string): BABYLON.Engine {
+  const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+  const engine = new BABYLON.Engine(canvas, true);
+  window.addEventListener("resize", function () {
+    engine.resize();
+  });
+  return engine;
 }
 
-export function testBabylon(): void {
-  // setup 3D Viewer
-  const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
-  const engine = new BABYLON.Engine(canvas, true, {
-    preserveDrawingBuffer: true,
-    stencil: true,
-  });
-
-  const scene = new BABYLON.Scene(engine);
-  const camera = new BABYLON.ArcRotateCamera(
+function createCamera(scene: BABYLON.Scene): BABYLON.Camera {
+  const arcRotateCamera = new BABYLON.ArcRotateCamera(
     "camera",
     Math.PI / 2,
-    Math.PI / 3.2,
-    2,
+    0,
+    0.2,
     BABYLON.Vector3.Zero(),
     scene
   );
-  camera.attachControl(canvas);
-  const light = new BABYLON.HemisphericLight(
+  arcRotateCamera.target = BABYLON.Vector3.Zero();
+  arcRotateCamera.attachControl(true);
+  arcRotateCamera.minZ = 0;
+  return arcRotateCamera;
+}
+
+function createLight(scene: BABYLON.Scene): BABYLON.Light {
+  const directionalLight = new BABYLON.DirectionalLight(
     "light",
-    new BABYLON.Vector3(0, 1, 0),
+    new BABYLON.Vector3(-1, -3, -1.5),
     scene
   );
-  const mesh = BABYLON.MeshBuilder.CreateGround("mesh", {}, scene);
+  directionalLight.intensity = 1.0;
+  return directionalLight;
+}
 
-  engine.runRenderLoop(() => {
-    scene.render();
-  });
+class Viewer {
+  private settings: ViewerSettings = defaultViewerSettings();
+  private engine: BABYLON.Engine;
+  private scene: BABYLON.Scene;
+  private camera: BABYLON.Camera;
+  private light: BABYLON.Light;
 
-  window.addEventListener("resize", () => {
-    engine.resize();
-  });
+  constructor(private canvasId: string, private gltfUrl: string) {
+    this.engine = createEngine(canvasId);
+    this.scene = new BABYLON.Scene(this.engine);
 
-  // UI
-  const createButton = (
-    text: string,
-    callback?: (
-      eventData: GUI.Vector2WithInfo,
-      eventState: BABYLON.EventState
-    ) => void
-  ): GUI.Button => {
-    const button = GUI.Button.CreateSimpleButton(text, text);
-    button.width = 0.2;
-    button.height = "40px";
-    button.color = "white";
-    button.background = "green";
-    button.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-    if (callback) {
-      button.onPointerClickObservable.add(callback);
+    this.setBackground(this.settings.background);
+
+    this.camera = createCamera(this.scene);
+    this.light = createLight(this.scene);
+    BABYLON.SceneLoader.AppendAsync("./", this.gltfUrl, this.scene)
+      .then(() => {
+        console.log("model loaded");
+      })
+      .catch(console.error);
+    this.engine.runRenderLoop(() => {
+      this.scene.render();
+    });
+  }
+
+  setBackground(background: Background): void {
+    switch (background.type) {
+      case BackgroundType.SingleColor:
+        this.scene.clearColor = new BABYLON.Color4(
+          background.color.r,
+          background.color.g,
+          background.color.b
+        );
+        break;
+      case BackgroundType.Gradient:
+        throw new Error("not implemented: BackgroundType.Gradient");
+      default:
+        throw new Error("invalid BackgroundType");
     }
-    return button;
-  };
+  }
+}
 
-  const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-  const panel = new GUI.StackPanel();
-  advancedTexture.addControl(panel);
-  panel.addControl(
-    createButton("Click Me 1", () => {
-      alert("press click me first");
-    })
-  );
-  panel.addControl(
-    createButton("Click Me 2", () => {
-      alert("press click me second");
-    })
-  );
-  panel.addControl(
-    createButton("Click Me 3", () => {
-      alert("press click me third");
-    })
-  );
+export function create(canvasId: string, gltfUrl: string): Viewer {
+  return new Viewer(canvasId, gltfUrl);
 }
