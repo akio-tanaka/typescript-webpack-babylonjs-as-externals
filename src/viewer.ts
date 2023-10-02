@@ -92,13 +92,6 @@ class Viewer {
         );
 
         // - background position
-        const groundMaterial = new BABYLON.StandardMaterial(
-          "ground_mat",
-          this.scene
-        );
-        groundMaterial.diffuseColor = BABYLON.Color3.Green();
-        groundMaterial.backFaceCulling = false;
-        ground.material = groundMaterial;
         const newGroundPosition = center.clone();
         newGroundPosition.y = min.y - diagonalVector.y * 0.5;
         ground.position = newGroundPosition;
