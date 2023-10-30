@@ -42,7 +42,7 @@ export class LoadingScreen implements BABYLON.ILoadingScreen {
     // set up img element
     // Fix me to set width and height automatically
     const img = document.createElement("img");
-    img.src = "./assets/logo.png";
+    img.src = "./assets/logo.svg";
     img.alt = "Core Concept Technologies Inc.";
     img.width = 960;
     img.height = 196;
